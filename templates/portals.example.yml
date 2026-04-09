@@ -112,6 +112,79 @@ title_filter:
     - "Head"
     - "Director"
 
+
+# -- API sources --
+# JSON APIs fetched directly via WebFetch. Each source defines:
+#   - url: base API endpoint
+#   - format: response shape identifier (remoteok, jobicy, remotive, usajobs)
+#   - filters: key-value pairs appended as query params
+#   - field_map: maps API fields to standard {title, company, url, location}
+#   - auth (optional): env vars for API keys
+#
+# Jobs array extraction by format:
+#   remoteok  → root array (skip first element = legal/meta)
+#   jobicy    → root.jobs
+#   remotive  → root.jobs
+#   usajobs   → root.SearchResult.SearchResultItems[] (.MatchedObjectDescriptor)
+
+api_sources:
+  - name: RemoteOK
+    url: "https://remoteok.com/api"
+    enabled: true
+    format: remoteok
+    filters:
+      tag: "devops"
+    field_map:
+      title: "position"
+      company: "company"
+      url: "url"
+      location: "location"
+
+  - name: Jobicy
+    url: "https://jobicy.com/api/v2/remote-jobs"
+    enabled: true
+    format: jobicy
+    filters:
+      tag: "network"
+      geo: "usa"
+      count: 50
+    field_map:
+      title: "jobTitle"
+      company: "companyName"
+      url: "url"
+      location: "jobGeo"
+
+  - name: Remotive
+    url: "https://remotive.com/api/remote-jobs"
+    enabled: true
+    format: remotive
+    filters:
+      search: "network engineer"
+      limit: 50
+    field_map:
+      title: "title"
+      company: "company_name"
+      url: "url"
+      location: "candidate_required_location"
+
+  - name: USAJobs
+    url: "https://data.usajobs.gov/api/search"
+    enabled: true
+    format: usajobs
+    auth:
+      header_key: "Authorization-Key"
+      env_var: "USAJOBS_API_KEY"
+      user_agent_env: "USAJOBS_EMAIL"
+    filters:
+      Keyword: "Network Engineer"
+      LocationName: "San Francisco;Los Angeles;Hawaii;Remote"
+      ResultsPerPage: 50
+    field_map:
+      title: "PositionTitle"
+      company: "OrganizationName"
+      url: "PositionURI"
+      location: "PositionLocationDisplay"
+
 # -- Search queries --
 # Each query triggers a WebSearch. Use site: to filter by portal.
 # The scanner extracts title, URL, and company from results.
