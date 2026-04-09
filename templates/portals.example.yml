@@ -998,3 +998,17 @@ tracked_companies:
     scan_query: '"Maxim AI" OR "getmaxim" careers "engineer" OR "product"'
     notes: "AI evaluation and observability platform. Bangalore-based, mostly on-site."
     enabled: true
+
+  # -- Specific targets (Network Engineering) --
+
+  - name: Anduril
+    careers_url: https://jobs.ashbyhq.com/anduril
+    notes: "Defense tech. Ashby SPA. SF/OC/DC offices."
+    enabled: true
+
+  - name: University of California
+    careers_url: https://jobs.universityofcalifornia.edu
+    scan_method: playwright
+    scan_query: '"network engineer" OR "infrastructure engineer" OR "systems engineer"'
+    notes: "UC system portal. Server-rendered HTML. Aggregates all campuses."
+    enabled: true
