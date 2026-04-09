@@ -3,6 +3,17 @@
 ## Pipeline completo
 
 1. Lee `cv.md` como fuentes de verdad
+
+1b. **Neo4j evidence (if available):** Query for most relevant positions and projects:
+```cypher
+MATCH (me:Person {name: $person_name})-[:WORKED_AT]->(pos:Position)-[:REQUIRED_SKILL]->(s:Skill)
+WHERE s.name IN $target_skills
+WITH pos, collect(DISTINCT s.name) AS matched_skills
+RETURN pos.title, pos.achievements, matched_skills
+ORDER BY size(matched_skills) DESC
+```
+Use this to prioritize which experience to emphasize and reorder bullets by relevance.
+
 2. Pide al usuario el JD si no está en contexto (texto o URL)
 3. Extrae 15-20 keywords del JD
 4. Detecta idioma del JD → idioma del CV (EN default)

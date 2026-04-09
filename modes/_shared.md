@@ -99,6 +99,19 @@ After detecting archetype, read `modes/_profile.md` for the user's specific fram
 | Canva MCP | Optional visual CV generation. Duplicate base design, edit text, export PDF. Requires `canva_resume_design_id` in profile.yml. |
 | Bash | `node generate-pdf.mjs` |
 
+### Neo4j Candidate Graph (Optional)
+
+If Neo4j MCP is connected and `config/profile.yml` has a `neo4j.person_name` field, query the candidate's knowledge graph for structured evidence before evaluating. This supplements cv.md with verified skill data, project details, and strength patterns.
+
+**Check availability:**
+```cypher
+MATCH (p:Person {name: $person_name}) RETURN p.name
+```
+
+If the Person node exists, use Neo4j queries in the modes below. If not, fall back to cv.md only.
+
+**Person name source:** Read `neo4j.person_name` from `config/profile.yml`. All graph queries must be scoped by this name.
+
 ### Time-to-offer priority
 - Working demo + metrics > perfection
 - Apply sooner > learn more

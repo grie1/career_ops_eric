@@ -9,6 +9,7 @@ When the user asks to prep for an interview at a specific company+role, or when 
 3. **Story bank** at `interview-prep/story-bank.md` — read for existing prepared stories
 4. **CV** at `cv.md` + `article-digest.md` — read for proof points
 5. **Profile** at `config/profile.yml` + `modes/_profile.md` — read for candidate context
+6. **Neo4j graph** (if available) — query for projects, strengths, and skill evidence
 
 ## Step 1 — Research
 
@@ -25,6 +26,33 @@ Run these WebSearch queries. Extract structured data, not summaries. Cite source
 If the company is small or obscure and yields few results, broaden: search for the role archetype at similar-stage companies, and note that intel is sparse.
 
 **Do NOT fabricate questions.** If a source says "they asked about distributed systems," report that. Do not invent a specific distributed systems question. When generating likely questions from JD analysis, label them clearly as `[inferred from JD]` not sourced from candidates.
+
+## Step 1b — Query Candidate Graph (if Neo4j available)
+
+```cypher
+// Recent projects with talking points
+MATCH (me:Person {name: $person_name})-[:BUILT]->(p:Project)
+WHERE p.status = "active"
+RETURN p.name, p.description, p.highlights,
+       [(p)-[:USES_TECH]->(s:Skill) | s.name] AS tech_stack
+```
+
+```cypher
+// Strengths ranked by evidence
+MATCH (me:Person {name: $person_name})-[*1..2]-(e)-[:EVIDENCES]->(str:Strength)
+RETURN str.name, str.category, str.description, count(e) AS evidence_count
+ORDER BY evidence_count DESC
+```
+
+```cypher
+// Skills matching this specific role
+MATCH (me:Person {name: $person_name})-[:HAS_SKILL]->(s:Skill)
+WHERE s.name IN $role_skills
+OPTIONAL MATCH (s)<-[:USED_IN]-(pos:Position)
+RETURN s.name, s.proficiency, collect(DISTINCT pos.title) AS where_used
+```
+
+Use these queries to prepare STAR stories backed by specific project and position evidence. The strengths query surfaces what to lead with; the skills query shows where you've used each technology.
 
 ## Step 2 — Process Overview
 

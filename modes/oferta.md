@@ -24,6 +24,20 @@ Tabla con:
 
 Lee `cv.md`. Crea tabla con cada requisito del JD mapeado a líneas exactas del CV.
 
+**Neo4j evidence (if available):** Before scoring match, query for structured skill evidence:
+```cypher
+MATCH (me:Person {name: $person_name})-[:HAS_SKILL]->(s:Skill)
+WHERE s.name IN $jd_skills
+OPTIONAL MATCH (s)<-[:USED_IN]-(pos:Position)
+OPTIONAL MATCH (s)<-[:USES_TECH]-(proj:Project)
+OPTIONAL MATCH (s)<-[:VALIDATES]-(cert:Certification)
+RETURN s.name, s.proficiency,
+       collect(DISTINCT pos.title) AS positions,
+       collect(DISTINCT proj.name) AS projects,
+       collect(DISTINCT cert.name) AS certs
+```
+Use this to cite specific positions, projects, and certifications as evidence for each skill match. This gives more precise matching than keyword scanning cv.md alone.
+
 **Adaptado al arquetipo:**
 - Si FDE → priorizar proof points de delivery rápida y client-facing
 - Si SA → priorizar diseño de sistemas e integrations

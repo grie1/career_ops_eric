@@ -110,6 +110,19 @@ Los niveles son aditivos — se ejecutan todos, los resultados se mezclan y dedu
       - **company**: después del " @ " en el título, o extraer del dominio/path
    c. Acumular en lista de candidatos (dedup con Nivel 1+2)
 
+### Scan multi-dominio desde Neo4j (opcional)
+
+Si Neo4j está disponible, antes de ejecutar los 3 niveles, consultar los clusters de skills del candidato para generar búsquedas adicionales:
+
+```cypher
+MATCH (me:Person {name: $person_name})-[:HAS_SKILL]->(s:Skill)
+WHERE s.proficiency IN ["expert", "proficient"]
+RETURN s.category, collect(s.name) AS skills, count(s) AS depth
+ORDER BY depth DESC
+```
+
+Usar los clusters con `depth >= 3` para generar queries adicionales automáticamente. Por ejemplo, si el candidato tiene 5+ networking skills, generar queries de "Network Engineer"; si tiene 3+ ML skills, generar queries de "ML Engineer". Esto permite descubrir roles en dominios adyacentes que el candidato podría no haber considerado.
+
 6. **Filtrar por título** usando `title_filter` de `portals.yml`:
    - Al menos 1 keyword de `positive` debe aparecer en el título (case-insensitive)
    - 0 keywords de `negative` deben aparecer
