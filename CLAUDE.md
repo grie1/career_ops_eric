@@ -218,6 +218,13 @@ Default modes are in `modes/` (English). Additional language-specific modes are 
 | Processes pending URLs | `pipeline` |
 | Batch processes offers | `batch` |
 | Asks about rejection patterns or wants to improve targeting | `patterns` |
+| Wants to sync GitHub projects to Neo4j       | `sync-projects`      |
+| Wants to sync resumes to Neo4j               | `sync-resumes`       |
+| Wants to sync transcripts to Neo4j           | `sync-transcripts`   |
+| Wants to sync certifications to Neo4j        | `sync-certs`         |
+| Wants to sync cover letters to Neo4j         | `sync-cover-letters` |
+| Wants to sync all profile data to Neo4j      | `update-graph`       |
+| Wants to load profile into Neo4j first time  | `onboard-graph`      |
 
 ### CV Source of Truth
 
