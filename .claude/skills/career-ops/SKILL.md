@@ -3,7 +3,7 @@ name: career-ops
 description: AI job search command center -- evaluate offers, generate CVs, scan portals, track applications
 user_invocable: true
 args: mode
-argument-hint: "[scan | deep | pdf | oferta | ofertas | apply | batch | tracker | pipeline | contacto | training | project | interview-prep | update]"
+argument-hint: "[scan | deep | pdf | oferta | ofertas | apply | batch | tracker | pipeline | contacto | training | project | interview-prep | update-graph | onboard-graph | sync-projects | sync-resumes | sync-transcripts | sync-certs | sync-cover-letters]"
 ---
 
 # career-ops -- Router
@@ -29,6 +29,11 @@ Determine the mode from `{{mode}}`:
 | `scan` | `scan` |
 | `batch` | `batch` |
 | `patterns` | `patterns` |
+| `sync-projects`      | `sync-projects`      |
+| `sync-resumes`       | `sync-resumes`       |
+| `sync-transcripts`   | `sync-transcripts`   |
+| `sync-certs`         | `sync-certs`         |
+| `sync-cover-letters` | `sync-cover-letters` |
 
 **Auto-pipeline detection:** If `{{mode}}` is not a known sub-command AND contains JD text (keywords: "responsibilities", "requirements", "qualifications", "about the role", "we're looking for", company name + role) or a URL to a JD, execute `auto-pipeline`.
 
@@ -59,6 +64,15 @@ Available commands:
   /career-ops batch     → Batch processing with parallel workers
   /career-ops patterns  → Analyze rejection patterns and improve targeting
 
+Profile Sync:
+  /career-ops update-graph        → Run all ingestors (full sync to Neo4j)
+  /career-ops onboard-graph       → First-time profile load to Neo4j
+  /career-ops sync-projects       → Sync GitHub projects only
+  /career-ops sync-resumes        → Sync resumes only
+  /career-ops sync-transcripts    → Sync transcripts only
+  /career-ops sync-certs          → Sync certifications only
+  /career-ops sync-cover-letters  → Sync cover letters only
+
 Inbox: add URLs to data/pipeline.md → /career-ops pipeline
 Or paste a JD directly to run the full pipeline.
 ```
@@ -77,7 +91,7 @@ Applies to: `auto-pipeline`, `oferta`, `ofertas`, `pdf`, `contacto`, `apply`, `p
 ### Standalone modes (only their mode file):
 Read `modes/{mode}.md`
 
-Applies to: `tracker`, `deep`, `training`, `project`, `patterns`
+Applies to: `tracker`, `deep`, `training`, `project`, `patterns`, `onboard-graph`, `update-graph`, `sync-projects`, `sync-resumes`, `sync-transcripts`, `sync-certs`, `sync-cover-letters`
 
 ### Modes delegated to subagent:
 For `scan`, `apply` (with Playwright), and `pipeline` (3+ URLs): launch as Agent with the content of `_shared.md` + `modes/{mode}.md` injected into the subagent prompt.
