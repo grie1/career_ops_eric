@@ -69,3 +69,9 @@ location:
   visa_status: "No sponsorship needed"
   # For remote roles outside your country:
   # onsite_availability: "1 week/month in any city"
+
+# Neo4j candidate knowledge graph
+# Used by /career-ops onboard-graph and /career-ops update-graph
+neo4j:
+  person_name: "Jane Smith"          # Must match Person node name in Neo4j
+  data_dir: "person_profile"         # Folder with source documents

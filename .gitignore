@@ -22,6 +22,10 @@ modes/_profile.md
 .update-dismissed
 .update-lock
 
+# Personal profile data (never committed)
+person_profile/
+eric_files/
+
 # Secrets
 .env
 
