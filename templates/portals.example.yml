@@ -64,6 +64,22 @@ title_filter:
     - "Business Systems"
     - "Internal Tools"
     - "Transformation"
+    # -- Network / Infrastructure roles --
+    - "Network Engineer"
+    - "Network Architect"
+    - "Network Administrator"
+    - "Infrastructure Engineer"
+    - "Systems Engineer"
+    - "NOC Engineer"
+    - "Network Security Engineer"
+    - "Cloud Network Engineer"
+    - "Firewall Engineer"
+    - "Network Operations"
+    - "Telecommunications Engineer"
+    - "Telecom Engineer"
+    - "Wireless Engineer"
+    - "Site Reliability"
+    - "DevOps Engineer"
   negative:
     # [CUSTOMIZE] Add keywords for roles you want to exclude
     - "Junior"
@@ -86,6 +102,7 @@ title_filter:
     - "Oracle EBS"
     - "Mainframe"
     - "COBOL"
+    - "Technician"
   seniority_boost:
     # These prefixes add relevance but are not required
     - "Senior"
