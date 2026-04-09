@@ -33,9 +33,30 @@ Leer `portals.yml` que contiene:
 
 **Cada empresa DEBE tener `careers_url` en portals.yml.** Si no la tiene, buscarla una vez, guardarla, y usar en futuros scans.
 
-### Nivel 2 — Greenhouse API (COMPLEMENTARIO)
+### Nivel 2 — JSON APIs (COMPLEMENTARIO)
 
-Para empresas con Greenhouse, la API JSON (`boards-api.greenhouse.io/v1/boards/{slug}/jobs`) devuelve datos estructurados limpios. Usar como complemento rápido de Nivel 1 — es más rápido que Playwright pero solo funciona con Greenhouse.
+Dos tipos de APIs:
+
+**A) Greenhouse API** — Para empresas con Greenhouse, la API JSON (`boards-api.greenhouse.io/v1/boards/{slug}/jobs`) devuelve datos estructurados limpios. Configurado por empresa en `tracked_companies` con campo `api:`.
+
+**B) API Sources genéricas** — Portales con APIs JSON públicas configuradas en el bloque `api_sources` de `portals.yml`. Cada fuente define:
+- `url`: endpoint base de la API
+- `format`: identificador de forma de respuesta (`remoteok`, `jobicy`, `remotive`, `usajobs`)
+- `filters`: pares key-value que se añaden como query params a la URL
+- `field_map`: mapeo de campos del API a `{title, company, url, location}`
+- `auth` (opcional): variables de entorno para API keys (leídas de `.env`)
+
+**Extracción del array de jobs por formato:**
+
+| Format | Path al array de jobs |
+|--------|----------------------|
+| `remoteok` | Array raíz (saltar primer elemento = legal/meta) |
+| `jobicy` | `root.jobs` |
+| `remotive` | `root.jobs` |
+| `usajobs` | `root.SearchResult.SearchResultItems[]` (datos en `.MatchedObjectDescriptor`) |
+| greenhouse | Array en `root.jobs` |
+
+**Auth:** Si la fuente tiene `auth`, leer la API key de la variable de entorno indicada en `auth.env_var` y enviarla en el header indicado en `auth.header_key`. Para USAJobs, además enviar el email de `auth.user_agent_env` en el header `User-Agent`.
 
 ### Nivel 3 — WebSearch queries (DESCUBRIMIENTO AMPLIO)
 
@@ -43,8 +64,9 @@ Los `search_queries` con `site:` filters cubren portales de forma transversal (t
 
 **Prioridad de ejecución:**
 1. Nivel 1: Playwright → todas las `tracked_companies` con `careers_url`
-2. Nivel 2: API → todas las `tracked_companies` con `api:`
-3. Nivel 3: WebSearch → todos los `search_queries` con `enabled: true`
+2. Nivel 2a: Greenhouse API → todas las `tracked_companies` con `api:`
+3. Nivel 2b: API Sources → todas las `api_sources` con `enabled: true`
+4. Nivel 3: WebSearch → todos los `search_queries` con `enabled: true`
 
 Los niveles son aditivos — se ejecutan todos, los resultados se mezclan y deduplicar.
 
@@ -69,6 +91,15 @@ Los niveles son aditivos — se ejecutan todos, los resultados se mezclan y dedu
    a. WebFetch de la URL de API → JSON con lista de jobs
    b. Para cada job extraer: `{title, url, company}`
    c. Acumular en lista de candidatos (dedup con Nivel 1)
+
+5b. **Nivel 2b — API Sources genéricas** (secuencial — respetar rate limits):
+    Para cada fuente en `api_sources` con `enabled: true`:
+    a. Construir URL: `{url}?{filters como query params}`
+    b. Si `auth` definido: leer key de `.env` variable `auth.env_var`, añadir header `auth.header_key`
+    c. WebFetch de la URL construida → JSON
+    d. Extraer array de jobs según `format` (ver tabla de extracción)
+    e. Para cada job: mapear campos usando `field_map` → `{title, url, company, location}`
+    f. Acumular en lista de candidatos (dedup con Nivel 1 + 2a)
 
 6. **Nivel 3 — WebSearch queries** (paralelo si posible):
    Para cada query en `search_queries` con `enabled: true`:
