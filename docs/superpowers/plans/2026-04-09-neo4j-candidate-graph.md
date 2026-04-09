@@ -404,70 +404,143 @@ Expected: Course counts per institution.
 
 ---
 
-### Task 5: Load Job History — Positions, Companies, Skills
+### Task 5: Load Work History + Ventures + Job Applications
 
 **Files:**
 - Read: All files in `person_profile/jobs/` (196 files across 23+ job folders + archived)
-- Neo4j: Create Position, Company, Skill, Application nodes + relationships
+- Neo4j: Create Position, Company, Skill, Application, Venture nodes + relationships
 
-This is the most complex extraction task. Each job folder contains resumes and cover letters that describe positions, skills, and achievements.
+**CRITICAL DISTINCTION:** The `jobs/` folder contains mostly job APPLICATIONS (cover letters, resumes tailored to specific roles), NOT employment history. Eric's actual work history is:
 
-- [ ] **Step 1: Read resumes and cover letters from each job folder**
+**W-2 Employment (create as Position nodes with WORKED_AT):**
+1. UC Berkeley — School of Law
+2. UC Irvine — Libraries
+3. Jubitz Corporation
 
-For each subdirectory in `person_profile/jobs/` (both active and archived):
-1. Read the DOCX/PDF files (resumes first, then cover letters)
-2. Extract from resumes:
-   - **Position history**: title, company, start/end dates, responsibilities, achievements
-   - **Skills mentioned**: tools, technologies, platforms, methodologies
-3. Extract from cover letters:
-   - **Target position**: the role being applied for
-   - **Self-described strengths**: what Eric emphasizes about himself
-   - **Skills highlighted**: what he chose to emphasize for this role
+**Own Companies/Ventures (create as Venture nodes with FOUNDED):**
+1. Menari LLC (dba Rapid LED)
+2. Downey Property Development
+3. Mendel LLC — IoT sensor company with Current Labs
 
-Start with the most recent folders (they have the most up-to-date work history) and work backwards. Deduplicate positions that appear across multiple resumes.
+**Job Offer (no documentation saved):**
+- Unitus — received real offer (create as Application with status "offered")
 
-- [ ] **Step 2: Create Company nodes**
+**Everything else in jobs/** = Application nodes (reference material showing how Eric positioned himself for different roles). These are valuable for extracting skills Eric claims and how he frames his experience, but they are NOT employment history.
 
-For each unique company found in the resumes, create a node. Example:
+- [ ] **Step 1: Read the most recent resumes to extract actual work history**
+
+Read 2-3 of the most recent resume DOCX/PDF files (e.g., from the OHSU or Meraki folders — these will have the most complete work history section). Extract:
+- Position titles, companies, date ranges, responsibilities, achievements for the 3 W-2 employers
+- Details about the 3 ventures (Menari/Rapid LED, Downey, Mendel/Current Labs)
+- Skills mentioned across all positions
+
+- [ ] **Step 2: Create Company nodes for actual employers and ventures**
 
 ```cypher
-MERGE (c:Company {name: "OHSU"})
-SET c.industry = "Healthcare/Education", c.location = "Portland, OR"
+// W-2 Employers
+MERGE (c:Company {name: "UC Berkeley"})
+SET c.industry = "Education", c.location = "Berkeley, CA", c.notes = "School of Law"
 
 MERGE (c:Company {name: "UC Irvine"})
-SET c.industry = "Education", c.location = "Irvine, CA"
+SET c.industry = "Education", c.location = "Irvine, CA", c.notes = "Libraries"
 
-MERGE (c:Company {name: "UCLA Health"})
-SET c.industry = "Healthcare", c.location = "Los Angeles, CA"
+MERGE (c:Company {name: "Jubitz Corporation"})
+SET c.industry = "Transportation/Hospitality", c.location = "Portland, OR"
+
+// Own Ventures
+MERGE (c:Company {name: "Menari LLC"})
+SET c.industry = "E-commerce/LED", c.notes = "dba Rapid LED. Eric's company."
+
+MERGE (c:Company {name: "Downey Property Development"})
+SET c.industry = "Real Estate", c.notes = "Eric's development project."
+
+MERGE (c:Company {name: "Mendel LLC"})
+SET c.industry = "IoT/Hardware", c.notes = "IoT sensor company with Current Labs. Eric's company."
+
+// Job offer company
+MERGE (c:Company {name: "Unitus"})
+SET c.industry = "Financial", c.notes = "Real offer received, no documentation saved."
 ```
 
-Repeat for all companies found (OHSU, UC Irvine, UCLA, UCLA Health, Meraki/Cisco, Microsoft, PSU, UCSF, Bigleaf Networks, Jubitz, LS Networks, Port of Portland, Davis Wright Tremaine, Unitus, Elemental/AWS, Oregon Public Defender, Haas, etc.).
+- [ ] **Step 3: Create Position nodes for actual employment + link to Companies**
 
-- [ ] **Step 3: Create Position nodes and link to Companies**
-
-For each position extracted from resumes:
+Extract actual position details from resumes (titles, dates, responsibilities, achievements) and create nodes. Example patterns — use real extracted data:
 
 ```cypher
-MERGE (pos:Position {title: "Network Infrastructure Analyst"})
-SET pos.start_date = "2022",
-    pos.end_date = "2024",
+// UC Berkeley position(s) — extract actual title/dates from resumes
+MERGE (pos:Position {title: "[actual title from resume]"})
+SET pos.start_date = "[from resume]",
+    pos.end_date = "[from resume]",
     pos.type = "full-time",
-    pos.description = "...",
-    pos.responsibilities = "...",
-    pos.achievements = "..."
+    pos.description = "[from resume]",
+    pos.responsibilities = "[from resume]",
+    pos.achievements = "[from resume]"
 WITH pos
-MATCH (c:Company {name: "OHSU"})
+MATCH (c:Company {name: "UC Berkeley"})
 MERGE (pos)-[:AT_COMPANY]->(c)
 WITH pos
 MATCH (p:Person {name: "Eric Grismer"})
 MERGE (p)-[:WORKED_AT]->(pos)
 ```
 
-Repeat for all positions found. Use the actual extracted data for description, responsibilities, and achievements.
+Repeat for UC Irvine and Jubitz positions. The subagent MUST read the actual resumes and extract real data — do not use placeholder values.
 
-- [ ] **Step 4: Create Skill nodes from job history**
+- [ ] **Step 3b: Create Venture nodes for own companies**
 
-Extract all skills mentioned across resumes and create Skill nodes with categories:
+Add a new node type for Eric's own ventures:
+
+```cypher
+// Menari LLC / Rapid LED
+MERGE (pos:Position {title: "Founder/Owner"})
+SET pos.start_date = "[from resume]",
+    pos.end_date = "[from resume]",
+    pos.type = "founder",
+    pos.description = "Founded and operated Rapid LED e-commerce business",
+    pos.achievements = "[from resume or ask Eric]"
+WITH pos
+MATCH (c:Company {name: "Menari LLC"})
+MERGE (pos)-[:AT_COMPANY]->(c)
+WITH pos
+MATCH (p:Person {name: "Eric Grismer"})
+MERGE (p)-[:WORKED_AT]->(pos)
+```
+
+Repeat for Downey Property Development and Mendel LLC. Use `type: "founder"` to distinguish from W-2 employment.
+
+- [ ] **Step 3c: Create Unitus Application node**
+
+```cypher
+MERGE (a:Application {materials_path: "none — offer not saved"})
+SET a.date = "",
+    a.status = "offered",
+    a.notes = "Received real job offer from Unitus. No documentation saved."
+WITH a
+MATCH (c:Company {name: "Unitus"})
+MERGE (a)-[:AT_COMPANY]->(c)
+```
+
+- [ ] **Step 4: Create Application nodes for all job folders**
+
+For each job folder in `person_profile/jobs/` (these are applications, NOT employment):
+
+```cypher
+// Example — OHSU Network Infrastructure Analyst application
+MERGE (a:Application {materials_path: "person_profile/jobs/OHSU Network Infrastructure Analyst"})
+SET a.date = "2024-11-12",
+    a.status = "applied",
+    a.notes = "Network Infrastructure Analyst — resumes and cover letters"
+WITH a
+MATCH (c:Company {name: "OHSU"})
+MERGE (a)-[:AT_COMPANY]->(c)
+```
+
+Create Company nodes for application targets too (OHSU, Meraki/Cisco, Microsoft, PSU, UCSF, etc.) but do NOT create WORKED_AT relationships for these — only AT_COMPANY on the Application node.
+
+Repeat for all job folders. Also read cover letters to extract skills Eric emphasized for each application — these are valuable for understanding how he positions himself.
+
+- [ ] **Step 5: Create Skill nodes from work history and applications**
+
+Extract all skills mentioned across resumes (from actual positions AND application materials) and create Skill nodes with categories:
 
 ```cypher
 // Programming
@@ -502,24 +575,25 @@ MERGE (s:Skill {name: "Technical Documentation"}) SET s.category = "soft-skill"
 
 The actual skills list will be much larger — the subagent extracts ALL skills mentioned across all resumes and creates nodes for each. Use MERGE to avoid duplicates.
 
-- [ ] **Step 5: Link Skills to Positions**
+- [ ] **Step 6: Link Skills to actual Positions (WORKED_AT only)**
 
-For each position, link the skills that were used in that role:
+For each real position (W-2 + ventures), link the skills that were used:
 
 ```cypher
-MATCH (pos:Position {title: "Network Infrastructure Analyst"})
-MATCH (s:Skill) WHERE s.name IN ["Cisco IOS", "TCP/IP", "VPN", "Wireless Networking", "Python"]
+MATCH (pos:Position)-[:AT_COMPANY]->(c:Company)
+WHERE c.name IN ["UC Berkeley", "UC Irvine", "Jubitz Corporation", "Menari LLC", "Mendel LLC", "Downey Property Development"]
+MATCH (s:Skill) WHERE s.name IN [... skills extracted from that position ...]
 MERGE (s)-[:USED_IN]->(pos)
 ```
 
-Repeat for all positions with their respective skills.
+Repeat for all actual positions with their respective skills.
 
-- [ ] **Step 6: Link Person to all Skills with proficiency**
+- [ ] **Step 7: Link Person to all Skills with proficiency**
 
 ```cypher
-// Expert: skills with 3+ positions or active certs
-// Proficient: 1-2 positions
-// Familiar: mentioned once in cover letter only
+// Expert: skills with 2+ actual positions or active certs (only 3 W-2 + 3 ventures, so lower threshold)
+// Proficient: 1 position or venture usage
+// Familiar: mentioned in application materials only
 MATCH (p:Person {name: "Eric Grismer"})
 MATCH (s:Skill)
 WHERE NOT EXISTS((p)-[:HAS_SKILL]->(s))
@@ -528,28 +602,12 @@ WITH p, s, count(pos) AS position_count
 WHERE position_count > 0
 MERGE (p)-[:HAS_SKILL {
   proficiency: CASE
-    WHEN position_count >= 3 THEN "expert"
+    WHEN position_count >= 2 THEN "expert"
     WHEN position_count >= 1 THEN "proficient"
     ELSE "familiar"
   END
 }]->(s)
 ```
-
-- [ ] **Step 7: Create Application nodes**
-
-For each job folder in `person_profile/jobs/`, create an Application node:
-
-```cypher
-MERGE (a:Application {materials_path: "person_profile/jobs/OHSU Network Infrastructure Analyst"})
-SET a.date = "2024-11-12",
-    a.status = "applied",
-    a.notes = "Network Infrastructure Analyst position"
-WITH a
-MATCH (c:Company {name: "OHSU"})
-MERGE (a)-[:AT_COMPANY]->(c)
-```
-
-Repeat for all job folders.
 
 - [ ] **Step 8: Verify**
 
@@ -759,9 +817,9 @@ After all data is loaded, the AI examines the graph to derive strengths from evi
 
 ```cypher
 // Create Strength nodes based on career patterns
-MERGE (str:Strength {name: "Enterprise Network Infrastructure"})
+MERGE (str:Strength {name: "UC System IT Expertise"})
 SET str.category = "technical",
-    str.description = "15+ years managing complex network environments across UC system, healthcare, and enterprise orgs"
+    str.description = "Deep experience across UC Berkeley (Law) and UC Irvine (Libraries) — understands university IT, procurement, and governance"
 
 MERGE (str:Strength {name: "Cisco Ecosystem Expertise"})
 SET str.category = "technical",
@@ -779,9 +837,9 @@ MERGE (str:Strength {name: "Applied Programming for Infrastructure"})
 SET str.category = "technical",
     str.description = "Python, PowerShell, Bash for automation and tooling. ML projects and IoT firmware development show range beyond scripting"
 
-MERGE (str:Strength {name: "Healthcare/Education IT"})
-SET str.category = "technical",
-    str.description = "Deep domain knowledge in university and healthcare IT environments — OHSU, UCLA Health, UC Irvine, UCSF"
+MERGE (str:Strength {name: "Entrepreneurial Builder"})
+SET str.category = "leadership",
+    str.description = "Founded and operated multiple businesses — Rapid LED (e-commerce), Downey Property Development, Mendel LLC (IoT with Current Labs). Full lifecycle from idea to revenue."
 
 MERGE (str:Strength {name: "Hardware + Software Integration"})
 SET str.category = "technical",
