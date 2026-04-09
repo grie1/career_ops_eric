@@ -75,10 +75,30 @@ The customized project lives at: `git@github.com:grie1/career_ops_eric.git`
 
    This reads all files in `person_profile/`, extracts entities, and loads them into Neo4j under their `person_name`. Both users share the same Neo4j instance — queries are scoped by person.
 
-6. **Complete standard onboarding:**
+6. **Keep profile updated:**
+
+   After adding new documents to `person_profile/`, run:
+
+   ```
+   /career-ops update-graph
+   ```
+
+   This dispatches all ingestors to sync your documents into Neo4j. You can also run individual sync commands:
+
+   ```
+   /career-ops sync-projects         # Just GitHub projects
+   /career-ops sync-resumes          # Just resumes
+   /career-ops sync-transcripts      # Just transcripts
+   /career-ops sync-certs            # Just certifications
+   /career-ops sync-cover-letters    # Just cover letters
+   ```
+
+   To add a custom ingestor, create a mode file in `modes/` and add an entry to `person_profile/ingestors.yml`.
+
+7. **Complete standard onboarding:**
 
    ```
    /career-ops
    ```
 
-7. Each copy is fully independent — separate tracker, reports, scans, pipeline, and graph namespace.
+8. Each copy is fully independent — separate tracker, reports, scans, pipeline, and graph namespace.

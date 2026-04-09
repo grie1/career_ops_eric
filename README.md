@@ -80,13 +80,20 @@ RETURN str.name, str.description, count(e) AS evidence
 ORDER BY evidence DESC
 ```
 
-### Updating the Graph
+### Keeping Your Profile Graph Updated
+
+After adding new files to `person_profile/`:
 
 ```
-/career-ops update-graph     # Scans person_profile/ for new files, updates Neo4j
+/career-ops update-graph          # Runs all ingestors (full sync)
+/career-ops sync-projects         # Just GitHub projects
+/career-ops sync-resumes          # Just resumes
+/career-ops sync-transcripts      # Just transcripts
+/career-ops sync-certs            # Just certifications
+/career-ops sync-cover-letters    # Just cover letters
 ```
 
-Status tracked in `person_profile/profile-status.md` — includes loaded items, pending items, and AI-generated recommendations for gaps and improvements.
+Results logged to `person_profile/sync-log.md`. To add a custom ingestor, create a mode file and register it in `person_profile/ingestors.yml`.
 
 ## Job Search Configuration
 
