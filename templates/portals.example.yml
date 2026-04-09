@@ -382,6 +382,40 @@ search_queries:
     query: 'site:news.ycombinator.com OR site:hnrss.org "AI Engineer" OR "Forward Deployed" OR "DevRel" OR "Founding Engineer" remote'
     enabled: true
 
+  # -- Network Engineer specific --
+
+  - name: Indeed — Network Engineer Remote
+    query: 'site:indeed.com "Network Engineer" OR "Network Architect" remote'
+    enabled: true
+
+  - name: Dice — Network Engineer
+    query: 'site:dice.com "Network Engineer" OR "Infrastructure Engineer" OR "Network Architect"'
+    enabled: true
+
+  - name: BuiltIn — Network/Infra Engineer
+    query: 'site:builtin.com "Network Engineer" OR "Infrastructure Engineer" OR "Cloud Network" remote'
+    enabled: true
+
+  - name: LinkedIn — Network Engineer Remote
+    query: 'site:linkedin.com/jobs "Network Engineer" OR "Network Architect" remote'
+    enabled: true
+
+  - name: Glassdoor — Network Engineer
+    query: 'site:glassdoor.com/job-listing "Network Engineer" OR "Infrastructure Engineer" remote'
+    enabled: true
+
+  - name: USAJobs Web — Network Engineer
+    query: 'site:usajobs.gov "Network Engineer" OR "IT Specialist" "Network" California OR Hawaii OR remote'
+    enabled: true
+
+  - name: Cleared Jobs — Network Engineer
+    query: 'site:clearedjobs.net "Network Engineer" OR "Network Architect" OR "Infrastructure Engineer"'
+    enabled: true
+
+  - name: UC Careers Web — Network/IT
+    query: 'site:jobs.universityofcalifornia.edu "Network Engineer" OR "IT Infrastructure" OR "Systems Engineer"'
+    enabled: true
+
 # -- Tracked companies --
 # Companies whose career pages are checked directly.
 # scan_method: playwright (default), websearch, greenhouse_api
